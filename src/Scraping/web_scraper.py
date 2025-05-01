@@ -66,8 +66,8 @@ def web_scraper(csv_file):
     for _, rows in df.iterrows():
         #Pull csv ids
         book_id = rows['Book ID']
-        title = rows['Title']
-        author = rows['Author']
+        title = str(rows['Title'])
+        author = str(rows['Author'])
 
         #Add in a try-except block to handle exceptions. This is where we will
         #see if our url search has worked or not
