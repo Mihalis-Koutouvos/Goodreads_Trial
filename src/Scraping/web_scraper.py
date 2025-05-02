@@ -4,6 +4,7 @@ import pandas as pd
 from rapidfuzz import fuzz
 import time
 import random
+from urllib.parse import quote_plus
 
 #GPT used here: I wanted to avoid errors with incoming GET requests and needed a way 
 #to get around it. GPT recommended using an agent to make it seem like my code is coming 
@@ -24,35 +25,81 @@ final_reviews = []
 
 #Searches Goodreads given the title and author
 def goodreads_search(title, author):
+    #GPT:
+    search_query = quote_plus(f'{title} {author}')
+    gr_url = f'https://www.goodreads.com/search?q={search_query}'
 
-    gr_url = f'https://www.goodreads.com/search?q={book}'
-
-
-
+    #Send a GET request to Goodreads
     #Beautiful soup will be used to parse the HTML
-    result = requests.get(url, headers=headers)
+    result = requests.get(gr_url, headers=headers)
     soup = BeautifulSoup(result.content, 'html.parser')
+    print(soup.prettify())
+
+
+    #Find the title within the a hyperlink
+    searched_book = soup.find("a", class_="bookTitle")
+    #If no book is found with the title
+    if not searched_book:
+        return None
+
+    #Searching for the tr that encloses the book title
+    search_result_title = searched_book.get_text(strip=True)
+    find_tr = searched_book.find_parent("tr")
+    
+    #Searching for the author name within the enclosed div
+    search_author = find_tr.find("a", class_="authorName") if find_tr else None
+    search_result_author = search_author.get_text(strip=True) if search_author else ""
+
+    #GPT: Fuzzy matching 
+    title_match_value = fuzz.token_sort_ratio(title.lower(), search_result_title.lower())
+    author_match_value = fuzz.token_sort_ratio(author.lower(), search_result_author.lower())
+
+
+    if title_match_value > 80 and author_match_value > 80:
+        return "https://www.goodreads.com" + searched_book["href"]
+
+    return None
+
+
+def obtain_reviews(url, id, title, author, max_page = 3):
+    #GPT:
+    for p in range(1, max_page + 1):
+        page_link = f"{url}?page={p}"
+
+    
+        #Send a GET request to Goodreads
+        #Beautiful soup will be used to parse the HTML
+        result = requests.get(page_link, headers=headers)
+        soup = BeautifulSoup(result.content, 'html.parser')
+        print(soup.prettify())
 
 
 
-def obtain_reviews(url, id, title, author):
+    
+
+    try: 
+
+ 
 
 
 
+        final_reviews({
 
-    final_reviews({
-        "review_text": review_text,
-        "review_rating": review_rating,
-        "reviewer_id": reviewer_id,
-        "upvotes": upvotes,
-        "downvotes": downvotes,
-        "review_date": review_date,
-        "user_shelf_tag": user_shelf_tag,
-        "number_of_comments": number_of_comments
-    })
+            "review_text": review_text,
+            "review_rating": review_rating,
+            "reviewer_id": reviewer_id,
+            "upvotes": upvotes,
+            "downvotes": None,
+            "review_date": review_date,
+            "user_shelf_tag": user_shelf_tag,
+            "number_of_comments": number_of_comments
+        })
 
 
+    except Exception as e: 
+        print("There was an error with the current page.")
 
+    time.sleep(random.uniform(1, 2))
 
 
 #Scrape Goodreads for the desired reviews about a certain book using our given
