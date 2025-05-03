@@ -61,7 +61,7 @@ def goodreads_search(title, author):
     return None
 
 
-def obtain_reviews(url, id, title, author, max_page = 3):
+def obtain_reviews(url, book_id, title, author, max_page = 3):
     #GPT:
     for p in range(1, max_page + 1):
         page_link = f"{url}?page={p}"
@@ -74,39 +74,54 @@ def obtain_reviews(url, id, title, author, max_page = 3):
         print(soup.prettify())
 
 
-
+        search_review_divs = soup.select("article.ReviewCard")
+        if not search_review_divs:
+            print("There are no reviews for the {p} page.")
+            break
     
+        for user_review in search_review_divs:
 
-    try: 
+            try: 
+                find_text = user_review.select_one("div.TruncatedContent__text span.Formatted")
+                review_text = find_text.get_text(strip=True) if find_text else ""
 
- 
+                find_rating = user_review.select_one("div[data-rating]")
+                review_rating = find_rating["data-rating"].split()[0] if find_rating and find_rating.has_attr("title") else ""
+
+                find_reviewer_id = user_review.select_one("a[href*='/user/show/']")
+                reviewer_id = find_reviewer_id["href"] if find_reviewer_id else ""
+
+                upvote = user_review.select_one("span[data-testid='likeCount']")
+                upvotes = int(upvote.get_text(strip=True).split()[0]) if upvote else 0
+
+                date = user_review.select_one("span[data-testod='reviewDate']")
+                review_date = date.get_text(strip=True) if date else ""
+
+                final_reviews.append({
+                    "book_id": book_id,
+                    "book_title": title,
+                    "book_author": author,
+                    "review_text": review_text,
+                    "review_rating": review_rating,
+                    "reviewer_id": reviewer_id,
+                    "upvotes": upvotes,
+                    "downvotes": None,
+                    "review_date": review_date,
+                })
 
 
+            except Exception as e: 
+                print("There was an error with the current page {e}.")
+                continue
 
-        final_reviews({
-
-            "review_text": review_text,
-            "review_rating": review_rating,
-            "reviewer_id": reviewer_id,
-            "upvotes": upvotes,
-            "downvotes": None,
-            "review_date": review_date,
-            "user_shelf_tag": user_shelf_tag,
-            "number_of_comments": number_of_comments
-        })
-
-
-    except Exception as e: 
-        print("There was an error with the current page.")
-
-    time.sleep(random.uniform(1, 2))
+        time.sleep(random.uniform(1, 2))
 
 
 #Scrape Goodreads for the desired reviews about a certain book using our given
 #csv file
 def web_scraper(csv_file):
     #Read in the csv data:
-    df = pd.read_csv('goodreads_list.csv')
+    df = pd.read_csv(csv_file)
     #print(df.head())
 
     #We want to find each book on the Goodreads website, so a url will be needed
@@ -138,9 +153,13 @@ def web_scraper(csv_file):
 
 #Run the program
 def main():
-    web_scraper("goodreads_list.csv")
+    web_scraper("src/Scraping/goodreads_list.csv")
 
     #Turn out results into a csv file:
     output_file = pd.DataFrame(final_reviews)
     output_file.to_csv("final_output.csv", index=False)
     print("Webscraping has finished!")
+    print(len(final_reviews))
+
+if __name__ == "__main__":
+    main()
