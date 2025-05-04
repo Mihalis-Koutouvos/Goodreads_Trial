@@ -76,7 +76,7 @@ def obtain_reviews(url, book_id, title, author, max_page = 3):
 
         search_review_divs = soup.select("article.ReviewCard")
         if not search_review_divs:
-            print("There are no reviews for the {p} page.")
+            print(f"There are no reviews for the {p} page.")
             break
     
         for user_review in search_review_divs:
@@ -157,7 +157,7 @@ def main():
 
     #Turn out results into a csv file:
     output_file = pd.DataFrame(final_reviews)
-    output_file.to_csv("final_output.csv", index=False)
+    output_file.to_csv("reviews_output.csv", index=False)
     print("Webscraping has finished!")
     print(len(final_reviews))
 
