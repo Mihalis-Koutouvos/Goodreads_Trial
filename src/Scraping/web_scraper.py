@@ -111,7 +111,7 @@ def obtain_reviews(url, book_id, title, author, max_page = 3):
 
 
             except Exception as e: 
-                print("There was an error with the current page {e}.")
+                print(f"There was an error with the current page {e}.")
                 continue
 
         time.sleep(random.uniform(1, 2))
