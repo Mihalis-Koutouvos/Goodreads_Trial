@@ -26,7 +26,7 @@
 
 1. Clone this repository
 2. Create a conda environment using these commands:
--conda create --name name_env python=3.12
--conda activate name_env
-3. Download the other dependencies: pip install -r requirements.txt (may need to do pip3, but should not need to in Python).
-4. Run files with the run button at the top right of the IDE
+3. conda create --name name_env python=3.12
+4. conda activate name_env
+5. Download the other dependencies: pip install -r requirements.txt (may need to do pip3, but should not need to in Python).
+6. Run files with the run button at the top right of the IDE
