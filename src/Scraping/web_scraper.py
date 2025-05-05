@@ -23,9 +23,22 @@ final_reviews = []
 
 
 
-#Searches Goodreads given the title and author
+#Searches Goodreads given the title and author for matching title and author
+#based on fuzzy matching scores
 def goodreads_search(title, author):
-    #GPT:
+    """
+    Searches Goodreads given the title and author for matching title and author
+    based on fuzzy matching scores 
+
+    Parameters:
+    title (str): name of the book
+    author (str): author of the title
+
+    Returns: 
+    None
+    """
+
+    #GPT: I needed a way to pass a query into a url with ease
     search_query = quote_plus(f'{title} {author}')
     gr_url = f'https://www.goodreads.com/search?q={search_query}'
 
@@ -50,19 +63,36 @@ def goodreads_search(title, author):
     search_author = find_tr.find("a", class_="authorName") if find_tr else None
     search_result_author = search_author.get_text(strip=True) if search_author else ""
 
-    #GPT: Fuzzy matching 
+    #GPT: Needed help figuring out the basics of fuzzy sorting, so GPT gave me a brief 
+    #explanation
     title_match_value = fuzz.token_sort_ratio(title.lower(), search_result_title.lower())
     author_match_value = fuzz.token_sort_ratio(author.lower(), search_result_author.lower())
 
-
+    #Applying a scoring threshold to find most accurate matching
     if title_match_value > 80 and author_match_value > 80:
         return "https://www.goodreads.com" + searched_book["href"]
 
     return None
 
 
+#Obtains a designated amount of reviews from the matched book 
 def obtain_reviews(url, book_id, title, author, max_page = 3):
-    #GPT:
+    """
+    Obtains a designated amount of reviews from the matched book 
+
+    Parameters:
+    url (str): URL for matched Goodreads page
+    book_id (int): Book id
+    title (str): Book name
+    author (str): Person who wrote book
+    max_page (int): Number of pages to go through
+
+    Returns: 
+    None
+    """
+
+    #GPT: Recommended by GPT in order to limit the amount of pages
+    #the web scraper went through
     for p in range(1, max_page + 1):
         page_link = f"{url}?page={p}"
 
@@ -73,12 +103,13 @@ def obtain_reviews(url, book_id, title, author, max_page = 3):
         soup = BeautifulSoup(result.content, 'html.parser')
         print(soup.prettify())
 
-
+        #Searching the nested elements
         search_review_divs = soup.select("article.ReviewCard")
         if not search_review_divs:
             print(f"There are no reviews for the {p} page.")
             break
     
+        #For each review in the review section, try to apply the following
         for user_review in search_review_divs:
 
             try: 
@@ -94,7 +125,7 @@ def obtain_reviews(url, book_id, title, author, max_page = 3):
                 upvote = user_review.select_one("span[data-testid='likeCount']")
                 upvotes = int(upvote.get_text(strip=True).split()[0]) if upvote else 0
 
-                date = user_review.select_one("span[data-testod='reviewDate']")
+                date = user_review.select_one("span[data-testid='reviewDate']")
                 review_date = date.get_text(strip=True) if date else ""
 
                 final_reviews.append({
@@ -120,6 +151,17 @@ def obtain_reviews(url, book_id, title, author, max_page = 3):
 #Scrape Goodreads for the desired reviews about a certain book using our given
 #csv file
 def web_scraper(csv_file):
+    """
+    Scrape Goodreads for the desired reviews about a certain book using our given
+    csv file 
+
+    Parameters:
+    csv_file (str): File path for csv file
+
+    Returns: 
+    None
+    """
+
     #Read in the csv data:
     df = pd.read_csv(csv_file)
     #print(df.head())
@@ -159,6 +201,7 @@ def main():
     output_file = pd.DataFrame(final_reviews)
     output_file.to_csv("reviews_output.csv", index=False)
     print("Webscraping has finished!")
+    #For testing
     print(len(final_reviews))
 
 if __name__ == "__main__":
