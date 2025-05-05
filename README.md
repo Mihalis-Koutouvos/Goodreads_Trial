@@ -4,20 +4,18 @@
 
 
 
-## Core Features
-
-- **CSV Upload**: Users upload CSVs with financial data
-- **Data Cleaning**: Automatically removes rows with missing or erroneous values
-
-
-## Project Goals
-
-- Build a robust pipeline for financial CSV processing  
-- Automatically clean and validate user-uploaded data  
--
+## Core Features:
+- **Book Matching**: Use given CSV list to match books on Goodreads
+- **Review Parsing**: Go through various reviews for a book and save them to a CSV file.
 
 
-## Requirements
+## Project Goals:
+
+- Use given CSV file to match for books on Goodreads
+- Save reviews from Goodreads into a CSV file if a book is found 
+
+
+## Requirements:
 
 - Python 3.12 
 - Required Python/conda packages (see requirements.txt)
@@ -27,19 +25,8 @@
 ## Project Setup:
 
 1. Clone this repository
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copy `.env.example` to `.env` and fill in your AWS credentials:
-   ```bash
-   cp .env.example .env
-   ```
-4. Edit the `.env` file with your AWS credentials:
-   ```
-   AWS_ACCESS_KEY_ID=your_access_key_here
-   AWS_SECRET_ACCESS_KEY=your_secret_key_here
-   AWS_REGION=your_aws_region
-   S3_BUCKET_NAME=your_bucket_name
-   ```
-5. Update the configuration variables
+2. Create a conda environment using these commands:
+-conda create --name name_env python=3.12
+-conda activate name_env
+3. Download the other dependencies: pip install -r requirements.txt (may need to do pip3, but should not need to in Python).
+4. Run files with the run button at the top right of the IDE
